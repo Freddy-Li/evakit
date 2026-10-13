@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EVAForge · 舱外智能手电钻</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, "Microsoft YaHei", sans-serif; line-height: 1.7; color: #222; background: #f8f9fb; }
+    header { background: linear-gradient(135deg, #0b1a3a, #1a3a6e); color: #fff; padding: 60px 20px 50px; text-align: center; }
+    header h1 { font-size: 2.2rem; margin-bottom: 10px; }
+    header p { font-size: 1.1rem; opacity: 0.85; max-width: 640px; margin: 0 auto; }
+    nav { background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.08); position: sticky; top: 0; z-index: 10; }
+    nav ul { list-style: none; display: flex; justify-content: center; gap: 28px; padding: 14px 20px; flex-wrap: wrap; }
+    nav a { text-decoration: none; color: #1a3a6e; font-weight: 600; font-size: 0.95rem; }
+    nav a:hover { color: #e86a2a; }
+    section { max-width: 860px; margin: 0 auto; padding: 48px 20px; }
+    section h2 { font-size: 1.5rem; color: #0b1a3a; margin-bottom: 16px; border-left: 4px solid #e86a2a; padding-left: 12px; }
+    .card { background: #fff; border-radius: 10px; padding: 24px; margin-bottom: 18px; box-shadow: 0 1px 6px rgba(0,0,0,.06); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; font-size: 0.92rem; }
+    th { background: #f0f3f8; }
+    footer { text-align: center; padding: 30px 20px; color: #888; font-size: 0.85rem; }
+    .badge { display: inline-block; background: #e86a2a; color: #fff; padding: 2px 10px; border-radius: 4px; font-size: 0.8rem; margin-left: 8px; }
+    @media (max-width: 600px) { header h1 { font-size: 1.5rem; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>EVAForge · 舱外智能手电钻</h1>
+  <p>语音控制 · 定扭矩定圈数 · 快拆防漂接口 —— 让航天员单手完成舱外紧固作业</p>
+</header>
+
+<nav>
+  <ul>
+    <li><a href="#problem">问题</a></li>
+    <li><a href="#solution">方案</a></li>
+    <li><a href="#tech">技术</a></li>
+    <li><a href="#test">测试数据</a></li>
+    <li><a href="#team">团队</a></li>
+    <li><a href="#price">成本与价格</a></li>
+  </ul>
+</nav>
+
+<section id="problem">
+  <h2>一、问题</h2>
+  <div class="card">
+    <p>航天员出舱作业时：加压手套捏合力大幅下降、头盔视野受限、一只手必须抓扶手保持姿态，而传统电钻的正反转、档位切换都需要双手配合；脱手的工具和螺丝会永久漂浮丢失。</p>
+  </div>
+</section>
+
+<section id="solution">
+  <h2>二、方案</h2>
+  <div class="grid">
+    <div class="card"><h3>🎙️ 语音控制</h3><p>“自动模式／紧固／松开／速度二档／转动一圈”，松开扳机后才允许改档，避免误触发。</p></div>
+    <div class="card"><h3>⚙️ 定扭矩</h3><p>舵机经 15:30 齿轮驱动扭矩环，三档扭矩自动切换，实测角度写入查表常量。</p></div>
+    <div class="card"><h3>🔢 圈数闭环</h3><p>光电编码器计数，达到设定圈数自动停机；扳机松开后重新计数。</p></div>
+    <div class="card"><h3>🔗 快拆防漂</h3><p>电磁铁通电取件、断电自锁；转速大于 0 时禁止解锁；系绳挂点防止漂浮丢失。</p></div>
+  </div>
+</section>
+
+<section id="tech">
+  <h2>三、技术实现</h2>
+  <div class="card">
+    <table>
+      <tr><th>模块</th><th>选型</th></tr>
+      <tr><td>主控</td><td>Arduino UNO（5V 逻辑直连电钻控制线，Timer2 输出 31kHz PWM）</td></tr>
+      <tr><td>显示</td><td>LCD12864 串行屏，实时显示模式／松紧／速度档／扭矩档／剩余圈数</td></tr>
+      <tr><td>反馈</td><td>10 栅格光电编码器 + 外部中断计数</td></tr>
+      <tr><td>执行</td><td>舵机（扭矩环）+ 电磁铁×2（快拆锁止）</td></tr>
+      <tr><td>交互</td><td>I²C 语音识别模块，17 条命令词</td></tr>
+    </table>
+  </div>
+</section>
+
+<section id="test">
+  <h2>四、测试数据</h2>
+  <div class="card">
+    <table>
+      <tr><th>项目</th><th>结果</th></tr>
+      <tr><td>减速比标定</td><td>标称 45:1，实测约 66:1（电机 66 圈 = 输出轴 1 圈）</td></tr>
+      <tr><td>圈数精度</td><td>半圈/一圈/两圈/三圈到点停机，误差 &lt;5%</td></tr>
+      <tr><td>防漂</td><td>脱手 5 次，零漂移超出 20cm</td></tr>
+      <tr><td>可靠性</td><td>连续 20 次换向无死机；急停响应 &lt;0.5s</td></tr>
+    </table>
+    <p style="margin-top:12px;color:#666;font-size:0.9rem;">注：本次为地面原理样机，真空、热循环、EMC、锂电池泄压尚未验证，已列入工程化清单。</p>
+  </div>
+</section>
+
+<section id="team">
+  <h2>五、团队</h2>
+  <div class="card">
+    <p><strong>EVAForge 团队</strong>（Conrad Challenge · 航空与航天领域）</p>
+    <p>机械结构 ｜ 电控硬件 ｜ 嵌入式软件 ｜ 产品与商业 ｜ 媒体与答辩</p>
+    <p style="margin-top:8px;">联系邮箱：your-email@example.com</p>
+  </div>
+</section>
+
+<section id="price">
+  <h2>六、成本与价格</h2>
+  <div class="card">
+    <table>
+      <tr><th>项目</th><th>金额</th></tr>
+      <tr><td>主控+驱动+传感器</td><td>约 ¥___</td></tr>
+      <tr><td>结构件（钣金+打印）</td><td>约 ¥___</td></tr>
+      <tr><td>单机成本估算</td><td>约 ¥___</td></tr>
+      <tr><td>目标售价</td><td>约 ¥___</td></tr>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 EVAForge Team · Conrad Challenge · 本网站为静态页面，托管于 GitHub Pages</p>
+</footer>
+
+</body>
+</html>
